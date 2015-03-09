@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<!-- Generated 08-mar-2015 15:56:53 by Hibernate Tools 4.3.1 -->
+<hibernate-mapping>
+    <class name="Entities.Punto" table="punto" schema="dbo" catalog="pointdb" optimistic-lock="version">
+        <id name="id" type="int">
+            <column name="_id" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="grupo" class="Entities.Grupo" fetch="select">
+            <column name="id_grupo" />
+        </many-to-one>
+        <property name="descripcion" type="string">
+            <column name="descripcion" />
+        </property>
+        <property name="localizacion" type="string">
+            <column name="localizacion" />
+        </property>
+        <set name="pars" table="par" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="id_punto" not-null="true" />
+            </key>
+            <one-to-many class="Entities.Par" />
+        </set>
+    </class>
+</hibernate-mapping>

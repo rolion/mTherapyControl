@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<!-- Generated 08-mar-2015 15:56:53 by Hibernate Tools 4.3.1 -->
+<hibernate-mapping>
+    <class name="Entities.Ratreo" table="ratreo" schema="dbo" catalog="pointdb" optimistic-lock="version">
+        <id name="id" type="int">
+            <column name="_id" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="paciente" class="Entities.Paciente" fetch="select">
+            <column name="id_paciente" />
+        </many-to-one>
+        <property name="fecha" type="timestamp">
+            <column name="fecha" length="23" />
+        </property>
+        <property name="trasfusionS" type="java.lang.Boolean">
+            <column name="trasfusion_s" />
+        </property>
+        <property name="trasplanteO" type="java.lang.Boolean">
+            <column name="trasplante_o" />
+        </property>
+        <property name="quimioterapia" type="java.lang.Boolean">
+            <column name="quimioterapia" />
+        </property>
+        <property name="radioterapia" type="java.lang.Boolean">
+            <column name="radioterapia" />
+        </property>
+        <property name="marcaPaso" type="java.lang.Boolean">
+            <column name="marca_paso" />
+        </property>
+        <property name="embarazo" type="java.lang.Boolean">
+            <column name="embarazo" />
+        </property>
+        <property name="observaciones" type="string">
+            <column name="observaciones" />
+        </property>
+        <set name="grupoRastreos" table="grupo_rastreo" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="id_rastreo" />
+            </key>
+            <one-to-many class="Entities.GrupoRastreo" />
+        </set>
+    </class>
+</hibernate-mapping>
