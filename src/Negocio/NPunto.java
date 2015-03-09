@@ -38,7 +38,8 @@ public class NPunto {
     }
     private boolean existePunto(String name){
         boolean existe=false;
-        Query q =session.createQuery("From Punto  p WHERE p.description like '"+name+"'");
+        Query q =session.createQuery("From Punto  p WHERE p.description like :name")
+                .setParameter("name", name);
         List result =q.list();
         if(result.size()>0)
             existe=true; 

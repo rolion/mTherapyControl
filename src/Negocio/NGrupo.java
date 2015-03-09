@@ -7,6 +7,7 @@ package Negocio;
 
 import Entities.Grupo;
 import java.util.List;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 
 /**
@@ -41,6 +42,11 @@ public class NGrupo {
         if(g.size()>0)
             existe=true;
         return existe;
+    }
+    public List<Grupo> listGrupo() throws HibernateException{
+        List<Grupo> listaGrupo=null;
+        listaGrupo=this.session.createQuery("FROM Grupo").list();
+        return listaGrupo;
     }
     private Grupo getGrupo(int id){
         Grupo g=null;
