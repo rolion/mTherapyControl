@@ -5,7 +5,13 @@
  */
 package mtherapycontrol;
 
+import java.awt.TrayIcon;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import util.mExcel;
 
@@ -38,11 +44,13 @@ public class FPrincipal extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        cbSheet = new javax.swing.JComboBox();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Therapy Control");
 
-        jButton1.setText("Iniciar");
+        jButton1.setText("Archivo");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -62,6 +70,15 @@ public class FPrincipal extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(jTable1);
 
+        cbSheet.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jButton2.setText("Cargar DB");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -71,6 +88,10 @@ public class FPrincipal extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton1)
+                        .addGap(34, 34, 34)
+                        .addComponent(cbSheet, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton2)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 861, Short.MAX_VALUE))
                 .addContainerGap())
@@ -79,7 +100,10 @@ public class FPrincipal extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(cbSheet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
                 .addContainerGap())
@@ -89,12 +113,38 @@ public class FPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        myExcel.setPath(mExcel.init(this));
-        DefaultTableModel model= myExcel.getModel();
-        this.jTable1.setModel(model);
+        try {
+            // TODO add your handling code here:
+//        myExcel.setPath(mExcel.init(this));
+//        DefaultTableModel model= myExcel.getModel();
+//        this.jTable1.setModel(model);
+            myExcel.init(this);
+            DefaultComboBoxModel model= new DefaultComboBoxModel(myExcel.getListSheet().toArray());
+            this.cbSheet.setModel(model);
+        } catch (Exception ex) {
+            Logger.getLogger(FPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+            showMessage("Error al cargar el archivo", ex.getMessage());
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        
+        try {
+            myExcel.initDB(this.cbSheet.getSelectedItem().toString());
+           
+        } catch (Exception he) {
+            showMessage("Erro en base de datos", he.getMessage());
+        }finally{
+            try {
+                myExcel.close();
+            } catch (Exception ex) {
+                showMessage("Erro en base de datos", ex.getMessage());
+            }
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+    private void showMessage(String message,String title){
+        JOptionPane.showMessageDialog(this,title,message,JOptionPane.WARNING_MESSAGE);
+    }
     /**
      * @param args the command line arguments
      */
@@ -131,7 +181,9 @@ public class FPrincipal extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox cbSheet;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables

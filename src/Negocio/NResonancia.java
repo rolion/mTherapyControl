@@ -7,6 +7,7 @@ package Negocio;
 
 import Entities.Punto;
 import Entities.Resonancia;
+import Hibernate.MyHibernateHelper;
 import java.util.List;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -16,7 +17,7 @@ import org.hibernate.Session;
  *
  * @author Lion
  */
-public class NResonancia {
+public class NResonancia extends MyHibernateHelper{
     Session session;
 
     public NResonancia(Session session) {
@@ -28,49 +29,51 @@ public class NResonancia {
     }
     public Resonancia guardarResonancia(Resonancia resonancia) throws HibernateException{
         if(resonancia!=null){
-            session.beginTransaction();
-            if(!existeResonancia(resonancia.getDescription()))
-                session.save(resonancia);
-            session.getTransaction().commit();
+            Resonancia r=getResonancia(resonancia.getDescription());
+            if(r==null)
+                saveObjet(resonancia);
+            else
+                resonancia=r;
         }
         return resonancia;
     }
-    private boolean existeResonancia(String name){
-        boolean existe=false;
-        Query q =session.createQuery("From Resonancia  r WHERE r.description like '"+name+"'");
-        List result =q.list();
-        if(result.size()>0)
-            existe=true;
-        return existe;
-    }
+
     public Resonancia getResonancia(int id){
         Resonancia r=null;
-        r=(Resonancia) this.session.createQuery
+        initTransaction();
+        r=(Resonancia) getSession().createQuery
             ("FROM Resonancia r WHERE r.id = :ID").setParameter("ID", id).uniqueResult();
+        closeTransaction();
         return r;
     }
-     public Resonancia getPunto(String name) throws HibernateException{
+     public Resonancia getResonancia(String name) throws HibernateException{
         Resonancia p=null;
+        initTransaction();
         //devuelve null si la consulta no consiguq un match
-        p= (Resonancia) session.createQuery("From Resonancia p WHERE p.description = :name")
-                .setParameter("name", name)
+        p= (Resonancia)getSession().createQuery("From Resonancia p WHERE p.description like :name")
+                .setString("name", name)
                 .uniqueResult();
+        closeTransaction();
         return p;
     }
     public List<Resonancia> listarResonancia(){
         List<Resonancia> listaR=null;
-            listaR= this.session.createQuery("FROM Resonancia r").list();
+        initTransaction();
+            listaR= getSession().createQuery("FROM Resonancia r").list();
+        closeTransaction();
         return listaR;
     }
     public int updatePunto(Resonancia r) throws HibernateException{
         int rslt=-1;
         if(r!=null)
         {
-            Query q=this.session.createQuery("UPDATE Resonancia p SET p.descripcion = :desc AND p.localizacion= :local")
+            initTransaction();
+            Query q=getSession().createQuery("UPDATE Resonancia p SET p.descripcion = :desc AND p.localizacion= :local")
                     .setParameter("desc", r.getDescription())
                     .setParameter("local", r.getLocalizacion());
             //devuelve el nro de filas afectadas
             rslt=q.executeUpdate();
+            closeTransaction();
         }
         return rslt;
     }
@@ -78,10 +81,12 @@ public class NResonancia {
         int rslt=-1;
         if(r!=null)
         {
-            Query q= this.session.createQuery("DELETE Resonancia r WHERE r.id= :ID")
+            initTransaction();
+            Query q= getSession().createQuery("DELETE Resonancia r WHERE r.id= :ID")
                     .setParameter("ID", r.getId());
             //devuelve el nro de filas eliminadas;
             rslt=q.executeUpdate();
+            closeTransaction();
         }
         return rslt;
     }

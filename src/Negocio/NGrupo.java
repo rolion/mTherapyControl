@@ -6,6 +6,7 @@
 package Negocio;
 
 import Entities.Grupo;
+import Hibernate.MyHibernateHelper;
 import java.util.List;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -15,7 +16,7 @@ import org.hibernate.Session;
  * @author Lion
  */
 
-public class NGrupo {
+public class NGrupo extends MyHibernateHelper{
     private Session session;
 
     public NGrupo(Session session) {
@@ -26,31 +27,35 @@ public class NGrupo {
         this.session= Hibernate.NewHibernateUtil.getSessionFactory().getCurrentSession();
     }
     public Grupo insertarGrupo(Grupo g){
-        Grupo mGrupo=null;
         if(g!=null){
-            this.session.beginTransaction();
-            this.session.save(g);
-            mGrupo=g;
-            this.session.getTransaction().commit();
+            Grupo mGrupo=getGrupoByName(g.getDescripcion());
+            if(mGrupo==null)
+                saveObjet(g);
+            else
+                g=mGrupo;
         }
-        return mGrupo;
+        return g;
     }
-    private boolean existeGrupo(String name){
-        boolean existe=false;
-        List g= this.session.createQuery
-            ("FROM Grupo g WHERE g.descripcion like :name").setString("name", name).list();
-        if(g.size()>0)
-            existe=true;
-        return existe;
+
+    public Grupo getGrupoByName(String name){
+        initTransaction();
+        Grupo g= (Grupo) getSession().createQuery("FROM Grupo g WHERE g.descripcion like :name")
+                .setString("name", name).uniqueResult();
+        closeTransaction();
+        return g;
     }
     public List<Grupo> listGrupo() throws HibernateException{
         List<Grupo> listaGrupo=null;
-        listaGrupo=this.session.createQuery("FROM Grupo").list();
+        initTransaction();
+        listaGrupo=getSession().createQuery("FROM Grupo").list();
+        closeTransaction();
         return listaGrupo;
     }
     private Grupo getGrupo(int id){
         Grupo g=null;
-        g=(Grupo) this.session.createQuery("FROM Grupo g WHERE g.id = :ID").setParameter("ID", id).uniqueResult();
+        initTransaction();
+        g=(Grupo) getSession().createQuery("FROM Grupo g WHERE g.id = :ID").setParameter("ID", id).uniqueResult();
+        closeTransaction();
         return g;
     }
     

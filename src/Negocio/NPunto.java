@@ -7,6 +7,7 @@ package Negocio;
 
 import Entities.Par;
 import Entities.Punto;
+import Hibernate.MyHibernateHelper;
 import java.math.BigDecimal;
 import java.util.List;
 import org.hibernate.HibernateException;
@@ -17,11 +18,13 @@ import org.hibernate.Session;
  *
  * @author Lion
  */
-public class NPunto {
-    Session session;
-
+public class NPunto extends MyHibernateHelper{
+    private Session session;
+    private final String insert_cGrupo="";
+    private final String insert_sGrupo="";
+   
     public NPunto() {
-        session= Hibernate.NewHibernateUtil.getSessionFactory().getCurrentSession();
+      
     }
 
     public NPunto(Session session) {
@@ -30,51 +33,52 @@ public class NPunto {
     public Punto guardarPunto(Punto punto) throws HibernateException{
         if(punto!=null)
         {
-            session.beginTransaction();
-            session.save(punto);
-            session.getTransaction().commit();
+            Punto p=getPunto(punto.getDescripcion());
+            if(p==null)
+              punto=(Punto)saveObjet(punto);
+            else
+                punto=p;
         }
         return punto;
-    }
-    private boolean existePunto(String name){
-        boolean existe=false;
-        Query q =session.createQuery("From Punto  p WHERE p.description like :name")
-                .setParameter("name", name);
-        List result =q.list();
-        if(result.size()>0)
-            existe=true; 
-        return existe;
     }
     public Punto getPunto(int id) throws HibernateException{
         Punto p=null;
         //devuelve null si la consulta no consiguq un match
-        p= (Punto) session.createQuery("From Punto p WHERE p.id = "+id).uniqueResult();
+        this.initTransaction();
+        p= (Punto) getSession().createQuery("From Punto p WHERE p.id = "+id).uniqueResult();
+        this.closeTransaction();
         return p;
     }
     public Punto getPunto(String name) throws HibernateException{
         Punto p=null;
         //devuelve null si la consulta no consiguq un match
-        p= (Punto) session.createQuery("From Punto p WHERE p.description = :name")
-                .setParameter("name", name)
+        initTransaction();
+        p= (Punto)getSession().createQuery("From Punto p WHERE p.descripcion like :name")
+                .setString("name", name)
                 .uniqueResult();
+        closeTransaction();
         return p;
     }
     public List<Punto> listarPuntos(){
         List<Punto> lPunto=null;
-        lPunto=session.createQuery("FROM Punto p").list();
+        initTransaction();
+        lPunto=getSession().createQuery("FROM Punto p").list();
+        closeTransaction();
         return lPunto;
     }
     public int updatePunto(Punto p) throws HibernateException{
         int rslt=-1;
         if(p!=null)
         {
-            Query q=this.session.createQuery("UPDATE Punto p SET p.descripcion = :desc AND p.localizacion= :local" 
+            initTransaction();
+            Query q=getSession().createQuery("UPDATE Punto p SET p.descripcion = :desc AND p.localizacion= :local" 
                 +" AND p.Grupo = :grupo")
                     .setParameter("desc", p.getDescripcion())
                     .setParameter("local", p.getLocalizacion())
                     .setEntity("grupo", p.getGrupo());
             //devuelve el nro de filas afectadas
             rslt=q.executeUpdate();
+            closeTransaction();
         }
         return rslt;
     }
@@ -82,10 +86,12 @@ public class NPunto {
         int rslt=-1;
         if(p!=null)
         {
-            Query q= this.session.createQuery("DELETE Punto p WHERE p.id= :ID")
+            initTransaction();
+            Query q=getSession().createQuery("DELETE Punto p WHERE p.id= :ID")
                     .setParameter("ID", p.getId());
             //devuelve el nro de filas eliminadas;
             rslt=q.executeUpdate();
+            closeTransaction();
         }
         return rslt;
     }

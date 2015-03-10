@@ -8,7 +8,9 @@ package Negocio;
 import Entities.Par;
 import Entities.Punto;
 import Entities.Resonancia;
+import Hibernate.MyHibernateHelper;
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
@@ -17,34 +19,37 @@ import org.hibernate.sql.JoinType;
  *
  * @author Lion
  */
-public class NPares {
-    private Session session;
+public class NPares extends MyHibernateHelper{
+   
 
     public NPares() {
-        this.session=Hibernate.NewHibernateUtil.getSessionFactory().getCurrentSession();
     }
 
-    public NPares(Session session) {
-        this.session = session;
-    }
-    public Par insertPar(Par par){
-        if(par!=null && !existePar(par.getPunto(), par.getResonancia())){
-            
-            this.session.save(par);
+    public Par insertPar(Par par) throws HibernateException{
+        if(par!=null ){
+            Par p=getPar(par.getPunto(), par.getResonancia());
+            if(p==null)
+                saveObjet(par);
+            else
+                par=p;
         }
         return par;
     }
-    public boolean existePar(Punto punto, Resonancia resonancia){
-        boolean exist=false;
-        Criteria criteria=session.createCriteria(Par.class);
-        //From Par p LEFT JOIN p.punto LEFT JOIN p.resonancia WHERE p.punto.id=1 AND p.resonancia.id=1
-        Par p=(Par) criteria.createCriteria("punto", JoinType.LEFT_OUTER_JOIN)
-                .createCriteria("resonancia", JoinType.LEFT_OUTER_JOIN)
-                .add(Restrictions.eq("punto.id",punto.getId()))
-                .add(Restrictions.eq("resonancia.id", resonancia.getId())).uniqueResult();
-        if(p!=null)
-            exist=true;
-        return exist;
+    public Par getPar(Punto punto, Resonancia resonancia) throws HibernateException
+    {
+        Par p=null;
+        if(punto !=null && resonancia !=null){
+            initTransaction();
+           p= (Par) getSession().createQuery("From Par p LEFT JOIN FETCH p.punto LEFT JOIN FETCH p.resonancia WHERE p.punto.id= :pid AND p.resonancia.id= :rid")
+                    .setInteger("pid", punto.getId())
+                    .setInteger("rid", resonancia.getId()).uniqueResult();
+//            p=(Par) criteria.createCriteria("punto", JoinType.LEFT_OUTER_JOIN)
+//                    .createCriteria("resonancia", JoinType.LEFT_OUTER_JOIN)
+//                    .add(Restrictions.eq("punto.id",punto.getId()))
+//                    .add(Restrictions.eq("resonancia.id", resonancia.getId())).uniqueResult();
+           closeTransaction();
+        }
+        return p;
     }
     
     
