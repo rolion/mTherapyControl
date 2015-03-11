@@ -20,11 +20,51 @@ public abstract class MyHibernateHelper {
         return session;
     }
     
-    public Object saveObjet(Object object) throws HibernateException{
+    public Object saveObjet(Object object){
         this.session=Hibernate.NewHibernateUtil.getSessionFactory().getCurrentSession();
-        this.session.beginTransaction();
-        this.session.save(object);
-        this.session.getTransaction().commit();
+        try{
+            this.session.beginTransaction();
+            this.session.save(object);
+            this.session.getTransaction().commit();
+        }catch(HibernateException he)
+        {
+            object=null;
+            System.out.println("Error al guardar Object /n"+he.getMessage());
+            System.out.println(he.getLocalizedMessage());
+            this.session.getTransaction().rollback();
+        }
+        return object;
+    }
+    public Object updateObject(Object object) {
+        this.session=Hibernate.NewHibernateUtil.getSessionFactory().getCurrentSession();
+        try{
+            this.session.beginTransaction();
+            this.session.update(object);
+            this.session.getTransaction().commit();
+        }catch(HibernateException he){
+            object=null;
+            System.out.println("Error al actualizar Object /n"+he.getMessage());
+            System.out.println(he.getLocalizedMessage());
+            this.session.getTransaction().rollback();
+           
+        }
+        return object;
+    }
+    public Object delteObject(Object object){
+        this.session=Hibernate.NewHibernateUtil.getSessionFactory().getCurrentSession();
+        try{
+            this.session.beginTransaction();
+            this.session.delete(object);
+            this.session.getTransaction().commit();
+        }
+        catch(HibernateException he)
+        {
+            object=null;
+            System.out.println("Error al Eliminar Object /n"+he.getMessage());
+            System.out.println(he.getLocalizedMessage());
+            this.session.getTransaction().rollback();
+           
+        }
         return object;
     }
     public void initTransaction(){
@@ -33,6 +73,9 @@ public abstract class MyHibernateHelper {
     }
     public void closeTransaction(){
         this.session.getTransaction().commit();
+    }
+    public void rollBackTransaction(){
+        this.session.getTransaction().rollback();
     }
     
 }

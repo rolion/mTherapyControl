@@ -50,6 +50,11 @@ public class Grupo  implements java.io.Serializable {
         this.puntos = puntos;
     }
 
+    @Override
+    public String toString() {
+        return descripcion;
+    }
+
 
 
 
